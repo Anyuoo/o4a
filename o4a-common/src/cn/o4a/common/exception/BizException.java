@@ -5,7 +5,7 @@ package cn.o4a.common.exception;
  * @version 1.0.0
  * @since 2022/7/20 10:12
  */
-public class BizException extends RuntimeException{
+public class BizException extends RuntimeException {
 
     private final BizError bizError;
 

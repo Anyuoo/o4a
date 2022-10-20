@@ -30,11 +30,6 @@ public class AvroFactory {
      */
     private static final String FIELD_DEFINE = "\t\t{\"name\": \"%s\", \"type\":[\"%s\", \"null\"]}";
 
-   <T> void  doWrite(Path fileName, AvroWriter<T> writer) {
-
-
-    }
-
     /**
      * 构建schema json字符串
      *
@@ -67,5 +62,10 @@ public class AvroFactory {
 
         return SCHEMA_DEFINE.replace("$name", schemaName)
                 .replace("$fields", fields.toString());
+    }
+
+    <T> void doWrite(Path fileName, AvroWriter<T> writer) {
+
+
     }
 }

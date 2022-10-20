@@ -7,9 +7,10 @@ package cn.o4a.rpc.common;
  */
 public interface Constants {
 
-    default Constants self() {
-        return new Constants(){};
-    }
-
     int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
+
+    default Constants self() {
+        return new Constants() {
+        };
+    }
 }

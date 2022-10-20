@@ -5,7 +5,7 @@ package cn.o4a.common.json;
  * @version 1.0.0
  * @since 2022/7/26 11:17
  */
-public class IllegalJsonValException extends RuntimeException{
+public class IllegalJsonValException extends RuntimeException {
 
 
     public IllegalJsonValException(String message, Throwable cause) {

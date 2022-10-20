@@ -5,7 +5,6 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,9 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @ChannelHandler.Sharable
 public class ServerHandler extends ChannelDuplexHandler {
 
-    cn.o4a.rpc.common.ChannelHandler channelHandler;
-
     private final Map<String, Channel> channels = new ConcurrentHashMap<>();
+    cn.o4a.rpc.common.ChannelHandler channelHandler;
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {

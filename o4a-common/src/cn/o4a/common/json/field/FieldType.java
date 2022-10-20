@@ -13,7 +13,7 @@ public enum FieldType implements Assertion {
     /**
      *
      */
-    STRING{
+    STRING {
         @Override
         public void assertJson(Condition condition, JSONObject json, String jsonKey) {
             final String val = json.getString(jsonKey);
@@ -43,7 +43,7 @@ public enum FieldType implements Assertion {
         }
     },
 
-    BOOL{
+    BOOL {
         @Override
         public void assertJson(Condition condition, JSONObject json, String jsonKey) {
             //
@@ -63,7 +63,6 @@ public enum FieldType implements Assertion {
         }
         throw new RuntimeException("");
     }
-
 
 
 }

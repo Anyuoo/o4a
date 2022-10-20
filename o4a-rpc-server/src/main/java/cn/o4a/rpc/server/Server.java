@@ -8,13 +8,14 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -25,27 +26,33 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * @since 2022/10/17 19:17
  */
 public class Server implements Closeable {
-    private Map<String, Channel> channels;
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
     /**
      * 当前Server本地地址
      */
     private final InetSocketAddress localAddress;
-
     private final ChannelHandler handler;
     private final ServerConfiguration configuration;
-
+    private Map<String, Channel> channels;
     private Channel channel;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private ServerBootstrap bootstrap;
 
-    public Server(InetSocketAddress localAddress,  ChannelHandler handler, ServerConfiguration configuration) {
+    public Server(InetSocketAddress localAddress, ChannelHandler handler, ServerConfiguration configuration) {
         this.localAddress = localAddress;
         this.configuration = configuration;
         this.handler = handler;
-        start();
+        initAndStart();
     }
 
+    public static Server bind(InetSocketAddress address, ChannelHandler handler) {
+        return bind(address, handler, ServerConfiguration.defaultConfig());
+    }
+
+    public static Server bind(InetSocketAddress address, ChannelHandler handler, ServerConfiguration configuration) {
+        return new Server(address, handler, configuration);
+    }
 
     private void initBootstrap() {
         //设置两个线程组boosGroup和workerGroup
@@ -80,19 +87,7 @@ public class Server implements Closeable {
         return new IdleStateHandler(0, 0, configuration.getIdleTimeout(), MILLISECONDS);
     }
 
-
-    public static void main(String[] args) {
-        try (final Server server = Server.bind(new InetSocketAddress("127.0.0.1",9999), null);) {
-            //
-            System.out.println(server.channel);
-            TimeUnit.DAYS.sleep(1);
-        } catch (Exception e) {
-            //
-        }
-    }
-
-
-    private void start(){
+    private void initAndStart() {
         //创建两个线程组 boosGroup、workerGroup
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup(configuration.getWorkerThreads());
@@ -104,14 +99,6 @@ public class Server implements Closeable {
         channel = channelFuture.channel();
     }
 
-   public static Server bind(InetSocketAddress address, ChannelHandler handler) {
-       return bind(address, handler,ServerConfiguration.defaultConfig());
-   }
-
-    public static Server bind(InetSocketAddress address, ChannelHandler handler, ServerConfiguration configuration) {
-        return new Server(address, handler, configuration);
-    }
-
     @Override
     public void close() {
         try {
@@ -120,14 +107,14 @@ public class Server implements Closeable {
                 channel.close();
             }
         } catch (Throwable e) {
-           //
+            logger.info("Server channel close fail", e);
         }
 
         for (Channel channelUnit : getChannels()) {
             try {
                 channelUnit.close();
             } catch (Throwable e) {
-                //
+                logger.info("Client channel close fail", e);
             }
         }
 
@@ -141,14 +128,14 @@ public class Server implements Closeable {
                 workerGroupShutdownFuture.syncUninterruptibly();
             }
         } catch (Throwable e) {
-         //
+            //
         }
         try {
             if (channels != null) {
                 channels.clear();
             }
         } catch (Throwable e) {
-           //
+            //
         }
     }
 

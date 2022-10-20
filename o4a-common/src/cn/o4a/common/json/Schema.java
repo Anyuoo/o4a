@@ -5,12 +5,11 @@ package cn.o4a.common.json;
  * @version 1.0.0
  * @since 2022/7/26 9:56
  */
-public class Schema  {
+public class Schema {
     private final String content;
-    private int curosr = 0;
-
     private final Element root;
     private final boolean ordered;
+    private int curosr = 0;
 
 
     private Schema(String schemaText, boolean ordered) {
@@ -31,35 +30,6 @@ public class Schema  {
 
 
         return schema;
-    }
-
-    private Element constructElement(String exp) {
-
-        //while (true) {
-        //    final char c = content[curosr];
-        //    if (content.length > 1) {
-        //
-        //    }
-        //}
-
-
-        return new Element(null, null, ordered);
-    }
-
-
-    private char charAt(int idx) {
-        return 'a';
-    }
-    public String toStandardString() {
-        return "";
-    }
-
-    public String toCompressString() {
-        return "";
-    }
-
-    public Element getRoot() {
-        return root;
     }
 
     public static void main(String[] args) {
@@ -83,6 +53,35 @@ public class Schema  {
         final String compressString = schema.toCompressString();
 
 
-        System.out.println((int)'{');
+        System.out.println((int) '{');
+    }
+
+    private Element constructElement(String exp) {
+
+        //while (true) {
+        //    final char c = content[curosr];
+        //    if (content.length > 1) {
+        //
+        //    }
+        //}
+
+
+        return new Element(null, null, ordered);
+    }
+
+    private char charAt(int idx) {
+        return 'a';
+    }
+
+    public String toStandardString() {
+        return "";
+    }
+
+    public String toCompressString() {
+        return "";
+    }
+
+    public Element getRoot() {
+        return root;
     }
 }

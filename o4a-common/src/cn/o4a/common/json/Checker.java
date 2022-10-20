@@ -21,7 +21,7 @@ public class Checker {
 
         final Element root = schema.getRoot();
 
-        final JSON data = (JSON)JSON.parse(json);
+        final JSON data = (JSON) JSON.parse(json);
 
 
         final PriorityQueue<ElementData> elementQueue = new PriorityQueue<>();
@@ -47,15 +47,15 @@ public class Checker {
         }
     }
 
-    public boolean isLegalJson(String json) {
-        return false;
-    }
-
     public static void main(String[] args) {
         Checker.validate(Schema.of(""), "");
     }
 
-    static class ElementData{
+    public boolean isLegalJson(String json) {
+        return false;
+    }
+
+    static class ElementData {
         List<Element> elements;
         JSON json;
 

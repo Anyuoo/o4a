@@ -8,6 +8,4 @@ package cn.o4a.common;
 public class CustomLoggerFactory {
 
 
-
-
 }

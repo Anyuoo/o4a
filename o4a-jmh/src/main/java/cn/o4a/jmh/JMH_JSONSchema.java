@@ -1,10 +1,7 @@
 package cn.o4a.jmh;
 
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.concurrent.TimeUnit;
 
@@ -18,13 +15,16 @@ import java.util.concurrent.TimeUnit;
 @OperationsPerInvocation(100_000)
 public class JMH_JSONSchema {
 
-    /**
-     * json schema
-     */
-    @Benchmark
-    public void measureJSONSchemaAvgTime() {
+    public static void main(String[] args) throws RunnerException {
+
+        JSONSchemaValidator.valid(JSONConst.JSON_SCHENA_1, JSONConst.JSON_1);
+
+        //Options opt = new OptionsBuilder()
+        //        .include(JMH_JSONSchema.class.getSimpleName())
+        //        .forks(1)
+        //        .build();
         //
-       JSONSchemaValidator.valid(JSONConst.JSON_SCHENA_1, JSONConst.JSON_1);
+        //new Runner(opt).run();
     }
 
     ///**
@@ -36,18 +36,13 @@ public class JMH_JSONSchema {
     //
     //}
 
-
-
-    public static void main(String[] args) throws RunnerException {
-
-        JSONSchemaValidator.valid(JSONConst.JSON_SCHENA_1, JSONConst.JSON_1);
-
-        //Options opt = new OptionsBuilder()
-        //        .include(JMH_JSONSchema.class.getSimpleName())
-        //        .forks(1)
-        //        .build();
+    /**
+     * json schema
+     */
+    @Benchmark
+    public void measureJSONSchemaAvgTime() {
         //
-        //new Runner(opt).run();
+        JSONSchemaValidator.valid(JSONConst.JSON_SCHENA_1, JSONConst.JSON_1);
     }
 
 }

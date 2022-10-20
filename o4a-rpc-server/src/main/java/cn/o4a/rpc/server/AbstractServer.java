@@ -1,11 +1,6 @@
 package cn.o4a.rpc.server;
 
-import io.netty.channel.ChannelHandler;
-
 import java.io.Closeable;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.URL;
 
 /**
  * @author Anyu

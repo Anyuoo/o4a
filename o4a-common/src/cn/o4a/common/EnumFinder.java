@@ -18,7 +18,7 @@ public final class EnumFinder {
      * 根据枚举元素标识id获取对应枚举
      *
      * @param enumClass 枚举类
-     * @param enumId 元素标识唯一id
+     * @param enumId    元素标识唯一id
      * @return 枚举元素或 {@code null}
      */
     public static <E extends Enum<E> & EnumVisible> E findStrict(Class<E> enumClass, String enumId) {
@@ -29,7 +29,7 @@ public final class EnumFinder {
      * 根据枚举元素标识elementId获取对应枚举, 匹配时忽略大小写
      *
      * @param enumClass 枚举类
-     * @param enumId 元素标识唯一id
+     * @param enumId    元素标识唯一id
      * @return 枚举元素或 {@code null}
      */
     public static <E extends Enum<E> & EnumVisible> E find(Class<E> enumClass, String enumId) {
@@ -56,7 +56,6 @@ public final class EnumFinder {
 
         return null;
     }
-
 
 
     /**

@@ -23,12 +23,16 @@ public class ServerConfiguration {
      */
     private int workerThreads = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
 
-    public void setAccepts(int accepts) {
-        this.accepts = accepts;
+    public static ServerConfiguration defaultConfig() {
+        return new ServerConfiguration();
     }
 
     public int getAccepts() {
         return accepts;
+    }
+
+    public void setAccepts(int accepts) {
+        this.accepts = accepts;
     }
 
     public int getIdleTimeout() {
@@ -53,10 +57,6 @@ public class ServerConfiguration {
 
     public void setShutdownTimeout(int shutdownTimeout) {
         this.shutdownTimeout = shutdownTimeout;
-    }
-
-    public static ServerConfiguration defaultConfig() {
-        return new ServerConfiguration();
     }
 
 }

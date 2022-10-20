@@ -49,9 +49,9 @@ public class Client {
         }
     }
 
-   public Client connect(URL url, ChannelHandler handler) {
+    public Client connect(URL url, ChannelHandler handler) {
 
-       return new Client();
+        return new Client();
     }
 
 }

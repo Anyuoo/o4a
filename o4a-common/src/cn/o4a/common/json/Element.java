@@ -6,8 +6,8 @@ import cn.o4a.common.json.field.FieldType;
 import java.util.*;
 
 /**
- *  name        type            condition
- *  property: <string>(min =1, max =5, required = true);
+ * name        type            condition
+ * property: <string>(min =1, max =5, required = true);
  *
  * @author Anyu
  * @version 1.0.0
@@ -25,6 +25,10 @@ public class Element implements Map<String, Element> {
         this.sonElement = ordered ? new LinkedHashMap<>() : new HashMap<>();
     }
 
+    public Element(FieldType fieldType, Condition condition) {
+        this(fieldType, condition, false);
+    }
+
     public Condition getCondition() {
         return condition;
     }
@@ -32,12 +36,6 @@ public class Element implements Map<String, Element> {
     public FieldType getFieldType() {
         return fieldType;
     }
-
-    public Element(FieldType fieldType, Condition condition) {
-        this(fieldType, condition, false);
-    }
-
-
 
     @Override
     public int size() {

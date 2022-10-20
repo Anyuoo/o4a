@@ -14,10 +14,10 @@ import java.util.Collection;
  * @since 2022/7/14 15:36
  */
 public class Assert {
+    private static BizError assertError = ParamError.PARAM_ERROR;
+
     private Assert() {
     }
-
-    private static BizError assertError = ParamError.PARAM_ERROR;
 
     public static void setAssertError(BizError error) {
         assertError = error;

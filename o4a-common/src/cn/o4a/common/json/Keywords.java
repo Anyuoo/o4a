@@ -55,7 +55,6 @@ public interface Keywords {
     String CRLF = "\r\n";
 
 
-
     String BOOL = "bool";
     String STRING = "string";
     String ARRAY = "array";
