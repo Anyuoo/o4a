@@ -1,11 +1,14 @@
 package cn.o4a.rpc.server;
 
+import cn.o4a.rpc.common.FrameDecoder;
+import cn.o4a.rpc.common.MessageCodec;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -39,7 +42,17 @@ public class Server implements Closeable {
     private EventLoopGroup workerGroup;
     private ServerBootstrap bootstrap;
 
-    public Server(InetSocketAddress localAddress, ChannelHandler handler, ServerConfiguration configuration) {
+    private Server(InetSocketAddress localAddress, ChannelHandler handler, ServerConfiguration configuration) {
+        if (localAddress == null) {
+            throw new IllegalArgumentException("localAddress == null");
+        }
+        if (handler == null) {
+            throw new IllegalArgumentException("handler == null");
+        }
+        if (configuration == null) {
+            throw new IllegalArgumentException("configuration == null");
+        }
+
         this.localAddress = localAddress;
         this.configuration = configuration;
         this.handler = handler;
@@ -65,15 +78,16 @@ public class Server implements Closeable {
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 //设置保持活动连接状态
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .handler(new LoggingHandler())
                 //使用匿名内部类的形式初始化通道对象
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) {
                         socketChannel.pipeline()
-                                //.addLast("decoder", adapter.getDecoder())
-                                //.addLast("encoder", adapter.getEncoder())
+                                .addLast("frame-decoder", new FrameDecoder(1024))
+                                .addLast("message-codec", new MessageCodec())
                                 .addLast("server-idle-handler", idlestatehandler())
-                                .addLast("handler", new Handler());
+                                .addLast("handler", handler);
                     }
                 });
     }

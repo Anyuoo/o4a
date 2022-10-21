@@ -12,7 +12,7 @@ class ServerTest {
 
     @Test
     void run() {
-        try (final Server server = Server.bind(new InetSocketAddress("127.0.0.1", 9999), null)) {
+        try (final Server server = Server.bind(new InetSocketAddress("127.0.0.1", 9999), new ServerHandler())) {
             //
             logger.info(server.toString());
             TimeUnit.DAYS.sleep(1);
