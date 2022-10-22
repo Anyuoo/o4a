@@ -23,7 +23,7 @@ public interface Channel {
     boolean isConnected();
 
     /**
-     * has attribute.
+     * has attributed.
      *
      * @param key key.
      * @return has or has not.

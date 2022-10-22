@@ -9,11 +9,12 @@ import cn.o4a.rpc.common.Constants;
  */
 public class ClientConfiguration {
     /**
-     * 空闲超时时间(mill)
+     * 服务端 2500 mills
+     * 心跳间隔(mills) 和服务端保持（c_t * 2  < s_t）,心跳有可能发送失败
      */
-    private int idleTimeout = 1000;
+    private int heartbeatInterval = 1000;
     /**
-     * 连接超时(mill)
+     * 连接超时(mills)
      */
     private int connectTimeout = 5000;
     /**
@@ -30,12 +31,12 @@ public class ClientConfiguration {
         return new ClientConfiguration();
     }
 
-    public int getIdleTimeout() {
-        return idleTimeout;
+    public int getHeartbeatInterval() {
+        return heartbeatInterval;
     }
 
-    public void setIdleTimeout(int idleTimeout) {
-        this.idleTimeout = idleTimeout;
+    public void setHeartbeatInterval(int heartbeatInterval) {
+        this.heartbeatInterval = heartbeatInterval;
     }
 
     public int getConnectTimeout() {

@@ -17,7 +17,7 @@ class MessageCodecTest {
         );
 
 
-        final Message response = Message.response(Message.STATUS_OK, "HALLL");
+        final Message response = Message.response(0, Message.STATUS_OK, "HALLL");
         final Message request = Message.request("haasfdsf");
         //channel.writeOneOutbound(message);
 

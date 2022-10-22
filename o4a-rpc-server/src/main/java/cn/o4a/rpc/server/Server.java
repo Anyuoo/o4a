@@ -102,7 +102,7 @@ public class Server implements Closeable {
      * @return 空闲超时连接处理器
      */
     private IdleStateHandler idlestatehandler() {
-        return new IdleStateHandler(0, 0, configuration.getIdleTimeout(), MILLISECONDS);
+        return new IdleStateHandler(0, 0, configuration.getHeartBeatTimeout(), MILLISECONDS);
     }
 
     private void initAndStart() {

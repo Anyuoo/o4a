@@ -27,7 +27,15 @@ public interface ChannelHandler {
      * @param channel channel.
      * @param message message.
      */
-    void sent(Channel channel, Object message) throws RemotingException;
+    void sent(Channel channel, Message message) throws RemotingException;
+
+    /**
+     * on message sent.
+     *
+     * @param channel channel.
+     * @param message message.
+     */
+    void sent(Channel channel, Message message, long timeout) throws RemotingException;
 
     /**
      * on message received.
@@ -35,7 +43,7 @@ public interface ChannelHandler {
      * @param channel channel.
      * @param message message.
      */
-    void received(Channel channel, Object message) throws RemotingException;
+    void received(Channel channel, Message message) throws RemotingException;
 
     /**
      * on exception caught.

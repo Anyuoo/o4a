@@ -8,9 +8,12 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 
 import java.io.Closeable;
 import java.net.InetSocketAddress;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author Anyu
@@ -65,6 +68,8 @@ public class Client implements Closeable {
                                 .addLast("frame-decoder", new FrameDecoder(configuration.getMaxBodySize()))
                                 //消息编解码器
                                 .addLast("message-codec", MessageCodec.INSTANCE)
+                                //超时处理
+                                .addLast("client-idle-handler", idlestatehandler())
                                 //业务handler
                                 .addLast("client-handler", handler);
                     }
@@ -74,6 +79,16 @@ public class Client implements Closeable {
         //对通道关闭进行监听
         channel = channelFuture.channel();
     }
+
+    /**
+     * 空闲超时连接处理器
+     *
+     * @return 空闲超时连接处理器
+     */
+    private IdleStateHandler idlestatehandler() {
+        return new IdleStateHandler(configuration.getHeartbeatInterval(), 0, 0, MILLISECONDS);
+    }
+
 
     @Override
     public void close() {

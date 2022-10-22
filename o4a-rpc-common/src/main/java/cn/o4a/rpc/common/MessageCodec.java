@@ -60,8 +60,7 @@ public final class MessageCodec extends AbstractMessageCodec<Message> {
             byteBuf.readBytes(body, 0, msgLength);
             message = JSON.parseObject(body, Message.class);
         } catch (Exception e) {
-            message = Message.response(AbstractMessage.STATUS_ERROR, null);
-            message.setExtMsg(e.getMessage());
+            message = Message.exceptionEvent("MessageCodec#decode 异常, message: " + e.getMessage());
         }
 
         list.add(message);

@@ -13,9 +13,10 @@ public class ServerConfiguration {
      */
     private int accepts = 128;
     /**
-     * 空闲超时时间(mill)
+     * 心跳超时(mill)
+     * 客户端心跳: 1000mills
      */
-    private int idleTimeout = 1000;
+    private int heartBeatTimeout = 2500;
     /**
      * 服务关闭超时(mill)
      */
@@ -42,12 +43,12 @@ public class ServerConfiguration {
         this.accepts = accepts;
     }
 
-    public int getIdleTimeout() {
-        return idleTimeout;
+    public int getHeartBeatTimeout() {
+        return heartBeatTimeout;
     }
 
-    public void setIdleTimeout(int idleTimeout) {
-        this.idleTimeout = idleTimeout;
+    public void setHeartBeatTimeout(int heartBeatTimeout) {
+        this.heartBeatTimeout = heartBeatTimeout;
     }
 
     public int getWorkerThreads() {

@@ -28,28 +28,31 @@ public class ServerHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         //获取客户端发送过来的消息
-        Message message = (Message) msg;
+        final Message message = (Message) msg;
+        if (message.isHeartBeatMessage()) {
+            final Message heartBeatMessage = Message.heartBeatEvent();
+            //回执
+            ctx.writeAndFlush(heartBeatMessage);
+            return;
+        }
         logger.info("收到客户端 {}, 发送的消息：{}, heart beat:{} ,request: {} ", ctx.channel().remoteAddress(), message, message.isHeartBeatMessage(), message.isRequest());
-    }
-
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        //发送消息给客户端
-        final Message response = Message.response(Message.STATUS_OK, "服务端已收到消息，并给你发送一个问号?");
-        ctx.writeAndFlush(response);
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
-
+            final Channel channel = ctx.channel();
+            if (channel != null) {
+                channel.close();
+                logger.info("未收到客户端心跳, 连接中断");
+            }
         }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         //发生异常，关闭通道
-        System.out.println(cause);
+        logger.info("未收到客户端心跳, 连接中断");
         ctx.close();
     }
 }
