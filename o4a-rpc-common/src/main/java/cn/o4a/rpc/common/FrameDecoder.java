@@ -10,7 +10,7 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 public class FrameDecoder extends LengthFieldBasedFrameDecoder {
 
 
-    public FrameDecoder(int maxMessageLength) {
-        super(maxMessageLength, 12, 4, 0, 0);
+    public FrameDecoder(int maxBodySize) {
+        super(AbstractMessageCodec.messageSize(maxBodySize), 12, 4, 0, 0);
     }
 }

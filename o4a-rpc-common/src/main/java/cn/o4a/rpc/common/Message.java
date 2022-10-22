@@ -9,11 +9,26 @@ public final class Message extends AbstractMessage {
     /**
      * 消息体
      */
-    private final Object body;
+    private Object body;
+    /**
+     * 额外信息
+     */
+    private String extMsg;
 
     public Message(boolean type, byte status, Object body) {
-        super(type, status);
+        this(type, false, status, body);
+    }
+
+    public Message(boolean type,boolean event, byte status, Object body) {
+        super(type, status, event);
         this.body = body;
+    }
+
+    public void setBody(Object body) {
+        this.body = body;
+    }
+    public static Message event(String event) {
+        return new Message(TYPE_REQUEST, true, STATUS_OK, event);
     }
 
     public static Message request(Object body) {
@@ -26,6 +41,18 @@ public final class Message extends AbstractMessage {
 
     public Object getBody() {
         return body;
+    }
+
+    public boolean isHeartBeatMessage() {
+        return event && HEART_BEAT_EVENT == body;
+    }
+
+    public String getExtMsg() {
+        return extMsg;
+    }
+
+    public void setExtMsg(String extMsg) {
+        this.extMsg = extMsg;
     }
 
     @Override

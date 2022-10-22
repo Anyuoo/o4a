@@ -84,9 +84,13 @@ public class Server implements Closeable {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) {
                         socketChannel.pipeline()
-                                .addLast("frame-decoder", new FrameDecoder(1024))
+                                //帧解码器
+                                .addLast("frame-decoder", new FrameDecoder(configuration.getMaxBodySize()))
+                                //消息编解码器
                                 .addLast("message-codec", new MessageCodec())
+                                //超时处理
                                 .addLast("server-idle-handler", idlestatehandler())
+                                //业务handler
                                 .addLast("handler", handler);
                     }
                 });

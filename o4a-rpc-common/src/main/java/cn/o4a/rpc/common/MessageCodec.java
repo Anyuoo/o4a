@@ -2,6 +2,7 @@ package cn.o4a.rpc.common;
 
 import com.alibaba.fastjson.JSON;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,13 +14,16 @@ import java.util.List;
  * @version 1.0.0
  * @since 2022/10/21 17:08
  */
-//@ChannelHandler.Sharable
-public class MessageCodec extends AbstractMessageCodec<Message> {
-    public static final MessageCodec INSTANCE = new MessageCodec();
+@ChannelHandler.Sharable
+public final class MessageCodec extends AbstractMessageCodec<Message> {
     private static final Logger logger = LoggerFactory.getLogger(MessageCodec.class);
 
+
+    public static final MessageCodec INSTANCE = new MessageCodec();
+
     @Override
-    protected void encode(ChannelHandlerContext channelHandlerContext, Message message, ByteBuf byteBuf) {
+    protected void encode(ChannelHandlerContext ctx, Message message, List<Object> list) {
+        final ByteBuf byteBuf = ctx.alloc().buffer();
         //魔数(2 byte)
         byteBuf.writeShort(MAGIC);
         //版本&消息类型(1 byte)
@@ -28,14 +32,18 @@ public class MessageCodec extends AbstractMessageCodec<Message> {
         byteBuf.writeByte(message.getStatus());
         //消息id(8字节)
         byteBuf.writeLong(message.getId());
+        if (message.isHeartBeatMessage()) {
+            message.setBody(null);
+        }
         //消息内容
         final byte[] messageBytes = JSON.toJSONBytes(message);
         //消息长度(4 byte)
         byteBuf.writeInt(messageBytes.length);
         //消息体
-        byteBuf.writeBytes(messageBytes);
-        logger.info("message encode completely, message: {}", message);
+        list.add(byteBuf);
+        logger.info("encode: {}", message);
     }
+
 
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
@@ -46,11 +54,18 @@ public class MessageCodec extends AbstractMessageCodec<Message> {
         final long msgId = byteBuf.readLong();
         final int msgLength = byteBuf.readInt();
 
-        final byte[] body = new byte[msgLength];
-        byteBuf.readBytes(body, 0, msgLength);
+        //
+        Message message;
+        try {
+            final byte[] body = new byte[msgLength];
+            byteBuf.readBytes(body, 0, msgLength);
+            message = JSON.parseObject(body, Message.class);
+        } catch (Exception e) {
+            message = Message.response(AbstractMessage.STATUS_ERROR, null);
+            message.setExtMsg(e.getMessage());
+        }
 
-        final Object message = JSON.parseObject(body, Message.class);
+        logger.info("decode: {}", message);
         list.add(message);
-        logger.info("message decode completely, message: {}", message);
     }
 }

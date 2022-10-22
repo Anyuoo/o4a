@@ -3,10 +3,7 @@ package cn.o4a.rpc.client;
 import cn.o4a.rpc.common.FrameDecoder;
 import cn.o4a.rpc.common.MessageCodec;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelInitializer;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -24,27 +21,32 @@ public class Client implements Closeable {
 
     private final InetSocketAddress serverAddress;
     private final ChannelHandler handler;
+    private final ClientConfiguration configuration;
     private NioEventLoopGroup eventExecutors;
     private Channel channel;
 
-    private Client(InetSocketAddress serverAddress, ChannelHandler handler) {
+    private Client(InetSocketAddress serverAddress, ChannelHandler handler, ClientConfiguration configuration) {
+        if (configuration == null) {
+            throw new IllegalArgumentException("configuration == null");
+        }
         if (serverAddress == null) {
             throw new IllegalArgumentException("serverAddress == null");
         }
         if (handler == null) {
             throw new IllegalArgumentException("handler == null");
         }
+        this.configuration = configuration;
         this.serverAddress = serverAddress;
         this.handler = handler;
         initAndConnect();
     }
 
     public static Client connect(InetSocketAddress serverAddress, ChannelHandler handler) {
-        return new Client(serverAddress, handler);
+        return new Client(serverAddress, handler, ClientConfiguration.defaultConfig());
     }
 
     private void initAndConnect() {
-        eventExecutors = new NioEventLoopGroup();
+        eventExecutors = new NioEventLoopGroup(configuration.getEventThreads());
         //创建bootstrap对象，配置参数
         final Bootstrap bootstrap = new Bootstrap();
         //设置线程组
@@ -52,14 +54,18 @@ public class Client implements Closeable {
                 //设置客户端的通道实现类型
                 .channel(NioSocketChannel.class)
                 .handler(new LoggingHandler())
-                //使用匿名内部类初始化通道
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, configuration.getConnectTimeout())
+                //初始化通道
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) {
                         //添加客户端通道的处理器
                         socketChannel.pipeline()
-                                .addLast("frame-decoder", new FrameDecoder(1024 * 32))
-                                .addLast("message-codec", new MessageCodec())
+                                //帧解码
+                                .addLast("frame-decoder", new FrameDecoder(configuration.getMaxBodySize()))
+                                //消息编解码器
+                                .addLast("message-codec", MessageCodec.INSTANCE)
+                                //业务handler
                                 .addLast("client-handler", handler);
                     }
                 });

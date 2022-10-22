@@ -1,5 +1,7 @@
 package cn.o4a.rpc.server;
 
+import cn.o4a.rpc.common.Constants;
+
 /**
  * @author Anyu
  * @version 1.0.0
@@ -11,17 +13,22 @@ public class ServerConfiguration {
      */
     private int accepts = 128;
     /**
-     * 空闲超时时间(seconds)
+     * 空闲超时时间(mill)
      */
-    private int idleTimeout = 600;
+    private int idleTimeout = 1000;
     /**
      * 服务关闭超时(mill)
      */
     private int shutdownTimeout = 20000;
     /**
+     * 最大body大小
+     */
+    private int maxBodySize = 1024 * 64;
+
+    /**
      * worker 线程数
      */
-    private int workerThreads = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
+    private int workerThreads = Constants.DEFAULT_IO_THREADS;
 
     public static ServerConfiguration defaultConfig() {
         return new ServerConfiguration();
@@ -59,4 +66,11 @@ public class ServerConfiguration {
         this.shutdownTimeout = shutdownTimeout;
     }
 
+    public int getMaxBodySize() {
+        return maxBodySize;
+    }
+
+    public void setMaxBodySize(int maxBodySize) {
+        this.maxBodySize = maxBodySize;
+    }
 }
