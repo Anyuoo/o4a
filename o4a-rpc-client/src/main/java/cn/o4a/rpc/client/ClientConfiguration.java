@@ -26,6 +26,10 @@ public class ClientConfiguration {
      */
     private int eventThreads = Constants.DEFAULT_IO_THREADS;
 
+    public static ClientConfiguration defaultConfig() {
+        return new ClientConfiguration();
+    }
+
     public int getIdleTimeout() {
         return idleTimeout;
     }
@@ -56,9 +60,5 @@ public class ClientConfiguration {
 
     public void setEventThreads(int eventThreads) {
         this.eventThreads = eventThreads;
-    }
-
-    public static ClientConfiguration defaultConfig() {
-        return new ClientConfiguration();
     }
 }

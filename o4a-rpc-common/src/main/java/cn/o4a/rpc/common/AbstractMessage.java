@@ -32,15 +32,15 @@ public abstract class AbstractMessage {
     /**
      * 消息类型[true: request, false: response]
      */
-    protected final boolean type;
+    protected boolean type;
     /**
      * 状态
      */
-    protected final byte status;
+    protected byte status;
     /**
      * 是否是事件
      */
-    protected final boolean event;
+    protected boolean event;
 
     protected AbstractMessage(boolean type, byte status, boolean event) {
         this.type = type;
@@ -64,6 +64,9 @@ public abstract class AbstractMessage {
         return status;
     }
 
+    public void setStatus(byte status) {
+        this.status = status;
+    }
 
     public long getId() {
         return id;
@@ -71,5 +74,21 @@ public abstract class AbstractMessage {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public boolean isType() {
+        return type;
+    }
+
+    public void setType(boolean type) {
+        this.type = type;
+    }
+
+    public boolean isEvent() {
+        return event;
+    }
+
+    public void setEvent(boolean event) {
+        this.event = event;
     }
 }

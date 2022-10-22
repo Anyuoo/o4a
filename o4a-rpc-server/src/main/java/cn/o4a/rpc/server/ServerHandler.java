@@ -29,7 +29,7 @@ public class ServerHandler extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         //获取客户端发送过来的消息
         Message message = (Message) msg;
-        logger.info("收到客户端 {}, 发送的消息：{}", ctx.channel().remoteAddress(), message);
+        logger.info("收到客户端 {}, 发送的消息：{}, heart beat:{} ,request: {} ", ctx.channel().remoteAddress(), message, message.isHeartBeatMessage(), message.isRequest());
     }
 
     @Override

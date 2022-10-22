@@ -27,4 +27,10 @@ public class ClientHandler extends ChannelDuplexHandler {
         System.out.println("收到服务端" + ctx.channel().remoteAddress() + "的消息：" + message);
         ctx.fireChannelRead(msg);
     }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        System.out.println("exp: " + cause);
+        super.exceptionCaught(ctx, cause);
+    }
 }

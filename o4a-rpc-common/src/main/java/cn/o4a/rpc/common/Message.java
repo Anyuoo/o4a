@@ -15,18 +15,16 @@ public final class Message extends AbstractMessage {
      */
     private String extMsg;
 
+
     public Message(boolean type, byte status, Object body) {
         this(type, false, status, body);
     }
 
-    public Message(boolean type,boolean event, byte status, Object body) {
+    public Message(boolean type, boolean event, byte status, Object body) {
         super(type, status, event);
         this.body = body;
     }
 
-    public void setBody(Object body) {
-        this.body = body;
-    }
     public static Message event(String event) {
         return new Message(TYPE_REQUEST, true, STATUS_OK, event);
     }
@@ -41,6 +39,10 @@ public final class Message extends AbstractMessage {
 
     public Object getBody() {
         return body;
+    }
+
+    public void setBody(Object body) {
+        this.body = body;
     }
 
     public boolean isHeartBeatMessage() {

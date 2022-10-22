@@ -2,6 +2,7 @@ package cn.o4a.rpc.common;
 
 import com.alibaba.fastjson.JSON;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -16,14 +17,12 @@ import java.util.List;
  */
 @ChannelHandler.Sharable
 public final class MessageCodec extends AbstractMessageCodec<Message> {
-    private static final Logger logger = LoggerFactory.getLogger(MessageCodec.class);
-
-
     public static final MessageCodec INSTANCE = new MessageCodec();
+    private static final Logger logger = LoggerFactory.getLogger(MessageCodec.class);
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Message message, List<Object> list) {
-        final ByteBuf byteBuf = ctx.alloc().buffer();
+        final ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer();
         //魔数(2 byte)
         byteBuf.writeShort(MAGIC);
         //版本&消息类型(1 byte)
@@ -40,8 +39,8 @@ public final class MessageCodec extends AbstractMessageCodec<Message> {
         //消息长度(4 byte)
         byteBuf.writeInt(messageBytes.length);
         //消息体
+        byteBuf.writeBytes(messageBytes);
         list.add(byteBuf);
-        logger.info("encode: {}", message);
     }
 
 
@@ -65,7 +64,6 @@ public final class MessageCodec extends AbstractMessageCodec<Message> {
             message.setExtMsg(e.getMessage());
         }
 
-        logger.info("decode: {}", message);
         list.add(message);
     }
 }

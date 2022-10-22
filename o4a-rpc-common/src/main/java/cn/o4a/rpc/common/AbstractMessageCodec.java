@@ -1,18 +1,14 @@
 package cn.o4a.rpc.common;
 
-import com.alibaba.fastjson.JSON;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.MessageToMessageCodec;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Anyu
  * @version 1.0.0
  * @since 2022/10/21 14:28
  */
-public abstract class AbstractMessageCodec<T> extends MessageToMessageCodec<ByteBuf,T> {
+public abstract class AbstractMessageCodec<T> extends MessageToMessageCodec<ByteBuf, T> {
     /**
      * 请求头长度
      */
