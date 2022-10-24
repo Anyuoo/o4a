@@ -12,7 +12,7 @@ class MessageCodecTest {
     @Test
     void encode() {
         final EmbeddedChannel channel = new EmbeddedChannel(
-                new FrameDecoder(1024),
+                new MessageFrameDecoder(1024),
                 new MessageCodec()
         );
 

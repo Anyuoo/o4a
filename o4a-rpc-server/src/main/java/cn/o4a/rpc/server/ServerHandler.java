@@ -1,10 +1,8 @@
 package cn.o4a.rpc.server;
 
 import cn.o4a.rpc.common.Message;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
+import cn.o4a.rpc.common.NettyChannel;
+import io.netty.channel.*;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,37 +20,73 @@ public class ServerHandler extends ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(ServerHandler.class);
 
     private final Map<String, Channel> channels = new ConcurrentHashMap<>();
-    cn.o4a.rpc.common.ChannelHandler channelHandler;
+    private final cn.o4a.rpc.common.ChannelHandler channelHandler;
+
+    public ServerHandler(cn.o4a.rpc.common.ChannelHandler channelHandler) {
+        this.channelHandler = channelHandler;
+    }
+
+    public Map<String, Channel> getChannels() {
+        return channels;
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
+        channel.connected(channel);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
+        try {
+            channelHandler.disconnected(channel);
+        } finally {
+            NettyChannel.removeChannel(ctx.channel());
+        }
+
+    }
+
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
+        final Message message = (Message) msg;
+        channelHandler.received(channel, message);
+    }
 
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        //获取客户端发送过来的消息
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        //移交下一个节点
+        super.write(ctx, msg, promise);
+        //操作
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
         final Message message = (Message) msg;
-        if (message.isHeartBeatMessage()) {
-            final Message heartBeatMessage = Message.heartBeatEvent();
-            //回执
-            ctx.writeAndFlush(heartBeatMessage);
-            return;
-        }
-        logger.info("收到客户端 {}, 发送的消息：{}, heart beat:{} ,request: {} ", ctx.channel().remoteAddress(), message, message.isHeartBeatMessage(), message.isRequest());
+        channelHandler.sent(channel, message);
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        // server will close channel when server don't receive any heartbeat from client util timeout.
         if (evt instanceof IdleStateEvent) {
-            final Channel channel = ctx.channel();
-            if (channel != null) {
+            NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
+            try {
+                logger.info("IdleStateEvent triggered, close channel " + channel);
                 channel.close();
-                logger.info("未收到客户端心跳, 连接中断");
+            } finally {
+                NettyChannel.removeChannelIfDisconnected(ctx.channel());
             }
         }
+        super.userEventTriggered(ctx, evt);
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        //发生异常，关闭通道
-        logger.info("未收到客户端心跳, 连接中断");
-        ctx.close();
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
+        try {
+            channelHandler.caught(channel, cause);
+        } finally {
+            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
     }
 }

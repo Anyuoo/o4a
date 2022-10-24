@@ -52,7 +52,6 @@ public final class MessageCodec extends AbstractMessageCodec<Message> {
         final byte msgStatus = byteBuf.readByte();
         final long msgId = byteBuf.readLong();
         final int msgLength = byteBuf.readInt();
-
         //
         Message message;
         try {

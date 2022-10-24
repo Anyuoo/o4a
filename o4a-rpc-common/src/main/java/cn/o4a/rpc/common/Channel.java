@@ -52,4 +52,9 @@ public interface Channel {
      * @param key key.
      */
     void removeAttribute(String key);
+
+    /**
+     * close the channel.
+     */
+    void close();
 }

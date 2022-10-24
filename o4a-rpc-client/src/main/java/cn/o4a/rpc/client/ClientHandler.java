@@ -5,6 +5,7 @@ import cn.o4a.rpc.common.NettyChannel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +19,20 @@ import org.slf4j.LoggerFactory;
 public class ClientHandler extends ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
 
-    private cn.o4a.rpc.common.ChannelHandler channelHandler;
+    private final cn.o4a.rpc.common.ChannelHandler channelHandler;
+
+    public ClientHandler(cn.o4a.rpc.common.ChannelHandler channelHandler) {
+        if (channelHandler == null) {
+            throw new IllegalArgumentException("channelHandler == null");
+        }
+        this.channelHandler = channelHandler;
+    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        ctx.fireChannelActive();
         try {
             final NettyChannel nettyChannel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
+            channelHandler.connected(nettyChannel);
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
         }
@@ -32,29 +40,49 @@ public class ClientHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        //接收服务端发送过来的消息
-        final Message message = (Message) msg;
-        //心跳消息
-        if (message.isHeartBeatMessage()) {
-            return;
-        }
-        logger.info("收到服务端 heart beat:{} ", message);
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
+        channelHandler.received(channel, (Message) msg);
+    }
+
+    @Override
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        super.write(ctx, msg, promise);
+        final NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
+
+        // We add listeners to make sure our out bound event is correct.
+        // If our out bound event has an error (in most cases the encoder fails),
+        // we need to have the request return directly instead of blocking the invoke process.
+        promise.addListener(future -> {
+            if (future.isSuccess()) {
+                // if our future is success, mark the future to sent.
+                channelHandler.sent(channel, (Message) msg);
+                return;
+            }
+
+            Throwable t = future.cause();
+            if (t != null) {
+                final Message message = Message.exceptionEvent(t.toString());
+                channelHandler.received(channel, message);
+            }
+        });
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.info("异常: ", cause);
-        super.exceptionCaught(ctx, cause);
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
+        try {
+            channelHandler.caught(channel, cause);
+        } finally {
+            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
+            final NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
             final Message heartBeatMessage = Message.heartBeatEvent();
-            if (ctx.channel() == null || !ctx.channel().isOpen()) {
-                return;
-            }
-            ctx.writeAndFlush(heartBeatMessage);
+            channel.send(heartBeatMessage);
         } else {
             super.userEventTriggered(ctx, evt);
         }

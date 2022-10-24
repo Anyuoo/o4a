@@ -48,6 +48,10 @@ public final class Message {
      * 消息体
      */
     private Object body;
+    /**
+     * 消息
+     */
+    private String errorMessage;
 
     public Message(long id, boolean type, byte status, boolean event, Object body) {
         this.id = id;

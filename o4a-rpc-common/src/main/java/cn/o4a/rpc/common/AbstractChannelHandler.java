@@ -5,11 +5,11 @@ package cn.o4a.rpc.common;
  * @version 1.0.0
  * @since 2022/10/22 22:10
  */
-public class AbstractChannelHandler implements ChannelHandler {
+public abstract class AbstractChannelHandler implements ChannelHandler {
 
     protected final ChannelHandler channelHandler;
 
-    public AbstractChannelHandler(ChannelHandler channelHandler) {
+    protected AbstractChannelHandler(ChannelHandler channelHandler) {
         this.channelHandler = channelHandler;
     }
 
@@ -28,10 +28,6 @@ public class AbstractChannelHandler implements ChannelHandler {
         channelHandler.sent(channel, message);
     }
 
-    @Override
-    public void sent(Channel channel, Message message, long timeout) throws RemotingException {
-        channelHandler.sent(channel, message, timeout);
-    }
 
     @Override
     public void received(Channel channel, Message message) throws RemotingException {

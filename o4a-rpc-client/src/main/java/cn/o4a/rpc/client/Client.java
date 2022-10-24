@@ -1,9 +1,14 @@
 package cn.o4a.rpc.client;
 
-import cn.o4a.rpc.common.FrameDecoder;
+import cn.o4a.rpc.common.ChannelHandler;
+import cn.o4a.rpc.common.HandlerWrappers;
 import cn.o4a.rpc.common.MessageCodec;
+import cn.o4a.rpc.common.MessageFrameDecoder;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -23,7 +28,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public class Client implements Closeable {
 
     private final InetSocketAddress serverAddress;
-    private final ChannelHandler handler;
+    private final ClientHandler clientHandler;
     private final ClientConfiguration configuration;
     private NioEventLoopGroup eventExecutors;
     private Channel channel;
@@ -40,7 +45,7 @@ public class Client implements Closeable {
         }
         this.configuration = configuration;
         this.serverAddress = serverAddress;
-        this.handler = handler;
+        this.clientHandler = new ClientHandler(HandlerWrappers.wrap(handler));
         initAndConnect();
     }
 
@@ -65,13 +70,13 @@ public class Client implements Closeable {
                         //添加客户端通道的处理器
                         socketChannel.pipeline()
                                 //帧解码
-                                .addLast("frame-decoder", new FrameDecoder(configuration.getMaxBodySize()))
+                                .addLast("frame-decoder", new MessageFrameDecoder(configuration.getMaxBodySize()))
                                 //消息编解码器
                                 .addLast("message-codec", MessageCodec.INSTANCE)
                                 //超时处理
                                 .addLast("client-idle-handler", idlestatehandler())
                                 //业务handler
-                                .addLast("client-handler", handler);
+                                .addLast("client-handler", clientHandler);
                     }
                 });
         //连接服务端

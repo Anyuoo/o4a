@@ -1,7 +1,9 @@
 package cn.o4a.rpc.server;
 
-import cn.o4a.rpc.common.FrameDecoder;
+import cn.o4a.rpc.common.ChannelHandler;
+import cn.o4a.rpc.common.HandlerWrappers;
 import cn.o4a.rpc.common.MessageCodec;
+import cn.o4a.rpc.common.MessageFrameDecoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -34,7 +36,7 @@ public class Server implements Closeable {
      * 当前Server本地地址
      */
     private final InetSocketAddress localAddress;
-    private final ChannelHandler handler;
+    private final ServerHandler serverHandler;
     private final ServerConfiguration configuration;
     private Map<String, Channel> channels;
     private Channel channel;
@@ -55,7 +57,7 @@ public class Server implements Closeable {
 
         this.localAddress = localAddress;
         this.configuration = configuration;
-        this.handler = handler;
+        this.serverHandler = new ServerHandler(HandlerWrappers.wrap(handler));
         initAndStart();
     }
 
@@ -85,13 +87,13 @@ public class Server implements Closeable {
                     protected void initChannel(SocketChannel socketChannel) {
                         socketChannel.pipeline()
                                 //帧解码器
-                                .addLast("frame-decoder", new FrameDecoder(configuration.getMaxBodySize()))
+                                .addLast("frame-decoder", new MessageFrameDecoder(configuration.getMaxBodySize()))
                                 //消息编解码器
                                 .addLast("message-codec", new MessageCodec())
                                 //超时处理
                                 .addLast("server-idle-handler", idlestatehandler())
                                 //业务handler
-                                .addLast("handler", handler);
+                                .addLast("sever-handler", serverHandler);
                     }
                 });
     }

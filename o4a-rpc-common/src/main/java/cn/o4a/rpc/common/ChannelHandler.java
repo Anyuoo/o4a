@@ -30,14 +30,6 @@ public interface ChannelHandler {
     void sent(Channel channel, Message message) throws RemotingException;
 
     /**
-     * on message sent.
-     *
-     * @param channel channel.
-     * @param message message.
-     */
-    void sent(Channel channel, Message message, long timeout) throws RemotingException;
-
-    /**
      * on message received.
      *
      * @param channel channel.

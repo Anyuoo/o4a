@@ -7,19 +7,24 @@ import io.netty.channel.ChannelFuture;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * 对自定义的channel 封装和缓存
+ *
  * @author Anyu
  * @version 1.0.0
  * @since 2022/10/22 15:35
  */
-public class NettyChannel extends AbsrtactChanel {
+public class NettyChannel extends AbstractChanel {
 
     private static final Map<Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<>();
     private final io.netty.channel.Channel channel;
 
-    private NettyChannel(Ability ability, io.netty.channel.Channel channel, ChannelHandler channelHandler) {
-        super(channelHandler, ability);
+    private final AtomicBoolean active = new AtomicBoolean(false);
+
+    private NettyChannel(io.netty.channel.Channel channel, ChannelHandler channelHandler) {
+        super(channelHandler);
         if (channel == null) {
             throw new IllegalArgumentException("netty channel == null");
         }
@@ -27,8 +32,11 @@ public class NettyChannel extends AbsrtactChanel {
     }
 
     public static void removeChannelIfDisconnected(io.netty.channel.Channel channel) {
-        if (channel != null && !channel.isOpen()) {
-            CHANNEL_MAP.remove(channel);
+        if (channel != null && !channel.isActive()) {
+            NettyChannel nettyChannel = CHANNEL_MAP.remove(channel);
+            if (nettyChannel != null) {
+                nettyChannel.markActive(false);
+            }
         }
     }
 
@@ -36,16 +44,34 @@ public class NettyChannel extends AbsrtactChanel {
         if (channel == null) {
             return null;
         }
-        NettyChannel nettyChannel = CHANNEL_MAP.get(channel);
-        if (nettyChannel != null && nettyChannel.isConnected()) {
-            return nettyChannel;
+        NettyChannel ret = CHANNEL_MAP.get(channel);
+        if (ret == null) {
+            NettyChannel nettyChannel = new NettyChannel(channel, channelHandler);
+            if (channel.isActive()) {
+                nettyChannel.markActive(true);
+                ret = CHANNEL_MAP.putIfAbsent(channel, nettyChannel);
+            }
+            if (ret == null) {
+                ret = nettyChannel;
+            }
+        } else {
+            ret.markActive(true);
         }
+        return ret;
+    }
 
-        if (channel.isOpen()) {
-            nettyChannel = CHANNEL_MAP.put(channel, new NettyChannel(null, channel, channelHandler));
+    public static void removeChannel(Channel channel) {
+        if (channel != null) {
+            NettyChannel nettyChannel = CHANNEL_MAP.remove(channel);
+            if (nettyChannel != null) {
+                nettyChannel.markActive(false);
+            }
         }
+    }
 
-        return nettyChannel;
+    @Override
+    public InetSocketAddress getLocalAddress() {
+        return (InetSocketAddress) channel.localAddress();
     }
 
     @Override
@@ -55,14 +81,30 @@ public class NettyChannel extends AbsrtactChanel {
 
     @Override
     public boolean isConnected() {
-        return channel.isOpen();
+        return isActive();
+    }
+
+    public boolean isActive() {
+        return active.get();
+    }
+
+    public void markActive(boolean isActive) {
+        active.set(isActive);
     }
 
     @Override
-    public void sent(cn.o4a.rpc.common.Channel channel, Message message, long timeout) throws RemotingException {
+    public void send(Object message) throws RemotingException {
+        send(message, -1);
+    }
+
+    @Override
+    public void send(Object message, int timeout) throws RemotingException {
+        boolean success = true;
         try {
-            ChannelFuture future = this.channel.write(message);
-            boolean success = future.await(Math.max(0, timeout));
+            ChannelFuture future = channel.writeAndFlush(message);
+            if (timeout > 0) {
+                success = future.await(timeout);
+            }
 
             final Throwable throwable = future.cause();
             if (throwable != null) {
@@ -73,9 +115,25 @@ public class NettyChannel extends AbsrtactChanel {
                         + "in timeout(" + timeout + "ms) limit");
             }
         } catch (Throwable e) {
+            removeChannelIfDisconnected(channel);
             throw new RemotingException("Failed to send message " + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
         }
-
-
     }
+
+    @Override
+    public void close() {
+        super.close();
+        try {
+            removeChannelIfDisconnected(channel);
+        } catch (Exception e) {
+            //
+        }
+
+        try {
+            channel.close();
+        } catch (Exception e) {
+            //
+        }
+    }
+
 }

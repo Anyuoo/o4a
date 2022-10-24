@@ -8,17 +8,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0.0
  * @since 2022/10/22 15:18
  */
-public abstract class AbsrtactChanel implements Channel, ChannelHandler {
+public abstract class AbstractChanel extends AbstractChannelHandler implements Channel, Endpoint {
 
-    protected final ChannelHandler channelHandler;
-    protected final Ability ability;
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
-    protected AbsrtactChanel(ChannelHandler channelHandler, Ability ability) {
-        this.channelHandler = channelHandler;
-        this.ability = ability;
+    protected AbstractChanel(ChannelHandler channelHandler) {
+        super(channelHandler);
     }
-
 
     @Override
     public void connected(Channel channel) throws RemotingException {
@@ -58,11 +54,25 @@ public abstract class AbsrtactChanel implements Channel, ChannelHandler {
 
     @Override
     public void setAttribute(String key, Object value) {
-        attributes.put(key, value);
+        if (value == null) {
+            attributes.remove(key);
+        } else {
+            attributes.put(key, value);
+        }
     }
 
     @Override
     public void removeAttribute(String key) {
         attributes.remove(key);
+    }
+
+    @Override
+    public void close() {
+        try {
+            attributes.clear();
+        } catch (Exception e) {
+            //todo
+        }
+
     }
 }

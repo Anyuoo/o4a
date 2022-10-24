@@ -1,14 +1,17 @@
 package cn.o4a.rpc.common;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author Anyu
  * @version 1.0.0
  * @since 2022/10/22 22:24
  */
 public class HeartBeatHandler extends AbstractChannelHandler {
-
     public static final String KEY_READ_TIMESTAMP = "READ_TIMESTAMP";
     public static final String KEY_WRITE_TIMESTAMP = "WRITE_TIMESTAMP";
+    private static final Logger logger = LoggerFactory.getLogger(HeartBeatHandler.class);
 
     public HeartBeatHandler(ChannelHandler channelHandler) {
         super(channelHandler);
@@ -38,10 +41,12 @@ public class HeartBeatHandler extends AbstractChannelHandler {
     public void received(Channel channel, Message message) throws RemotingException {
         setReadTimestamp(channel);
         if (message.isHeartBeatMessage()) {
+            logger.info("receive heart beat: {}", message);
             if (message.isRequest()) {
                 final Message heartBeatMessage = Message.heartBeatEvent(message.getId());
                 //回执
                 sent(channel, heartBeatMessage);
+
             }
             return;
         }
