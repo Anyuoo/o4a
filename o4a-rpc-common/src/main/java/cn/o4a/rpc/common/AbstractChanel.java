@@ -4,11 +4,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * 通信
+ *
  * @author Anyu
  * @version 1.0.0
  * @since 2022/10/22 15:18
  */
-public abstract class AbstractChanel extends AbstractChannelHandler implements Channel, Endpoint {
+public abstract class AbstractChanel extends ChannelHandlerDelegate implements Channel {
 
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
@@ -73,6 +75,5 @@ public abstract class AbstractChanel extends AbstractChannelHandler implements C
         } catch (Exception e) {
             //todo
         }
-
     }
 }

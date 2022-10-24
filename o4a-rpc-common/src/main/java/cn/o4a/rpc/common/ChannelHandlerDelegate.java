@@ -5,11 +5,11 @@ package cn.o4a.rpc.common;
  * @version 1.0.0
  * @since 2022/10/22 22:10
  */
-public abstract class AbstractChannelHandler implements ChannelHandler {
+public abstract class ChannelHandlerDelegate implements ChannelHandler {
 
     protected final ChannelHandler channelHandler;
 
-    protected AbstractChannelHandler(ChannelHandler channelHandler) {
+    protected ChannelHandlerDelegate(ChannelHandler channelHandler) {
         this.channelHandler = channelHandler;
     }
 
@@ -39,9 +39,10 @@ public abstract class AbstractChannelHandler implements ChannelHandler {
         channelHandler.caught(channel, exception);
     }
 
+
     public ChannelHandler getChannelHandler() {
-        if (channelHandler instanceof AbstractChannelHandler) {
-            return ((AbstractChannelHandler) channelHandler).getChannelHandler();
+        if (channelHandler instanceof ChannelHandlerDelegate) {
+            return ((ChannelHandlerDelegate) channelHandler).getChannelHandler();
         }
         return channelHandler;
     }

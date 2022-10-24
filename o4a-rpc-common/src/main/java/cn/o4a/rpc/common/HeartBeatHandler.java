@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
  * @version 1.0.0
  * @since 2022/10/22 22:24
  */
-public class HeartBeatHandler extends AbstractChannelHandler {
+public class HeartBeatHandler extends ChannelHandlerDelegate {
     public static final String KEY_READ_TIMESTAMP = "READ_TIMESTAMP";
     public static final String KEY_WRITE_TIMESTAMP = "WRITE_TIMESTAMP";
     private static final Logger logger = LoggerFactory.getLogger(HeartBeatHandler.class);

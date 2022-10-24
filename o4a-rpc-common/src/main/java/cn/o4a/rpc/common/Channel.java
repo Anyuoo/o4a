@@ -7,7 +7,7 @@ import java.net.InetSocketAddress;
  * @version 1.0.0
  * @since 2022/10/20 15:20
  */
-public interface Channel {
+public interface Channel extends Endpoint {
     /**
      * get remote address.
      *

@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +45,7 @@ public class Server implements Closeable {
     private EventLoopGroup workerGroup;
     private ServerBootstrap bootstrap;
 
-    private Server(InetSocketAddress localAddress, ChannelHandler handler, ServerConfiguration configuration) {
+    private Server(InetSocketAddress localAddress, ChannelHandler handler, ServerConfiguration configuration) throws ConnectException {
         if (localAddress == null) {
             throw new IllegalArgumentException("localAddress == null");
         }
@@ -61,11 +62,11 @@ public class Server implements Closeable {
         initAndStart();
     }
 
-    public static Server bind(InetSocketAddress address, ChannelHandler handler) {
+    public static Server bind(InetSocketAddress address, ChannelHandler handler) throws ConnectException {
         return bind(address, handler, ServerConfiguration.defaultConfig());
     }
 
-    public static Server bind(InetSocketAddress address, ChannelHandler handler, ServerConfiguration configuration) {
+    public static Server bind(InetSocketAddress address, ChannelHandler handler, ServerConfiguration configuration) throws ConnectException {
         return new Server(address, handler, configuration);
     }
 
@@ -107,7 +108,7 @@ public class Server implements Closeable {
         return new IdleStateHandler(0, 0, configuration.getHeartBeatTimeout(), MILLISECONDS);
     }
 
-    private void initAndStart() {
+    private void initAndStart() throws ConnectException {
         //创建两个线程组 boosGroup、workerGroup
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup(configuration.getWorkerThreads());
@@ -115,7 +116,13 @@ public class Server implements Closeable {
         bootstrap = new ServerBootstrap();
         initBootstrap();
         //绑定端口号，启动服务端
-        final ChannelFuture channelFuture = bootstrap.bind(localAddress);
+        final ChannelFuture channelFuture;
+        try {
+            channelFuture = bootstrap.bind(localAddress).sync();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ConnectException("初始化服务失败, " + e.getMessage());
+        }
         channel = channelFuture.channel();
     }
 

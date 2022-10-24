@@ -1,7 +1,5 @@
 package cn.o4a.rpc.client;
 
-import cn.o4a.rpc.common.ChannelHandler;
-import cn.o4a.rpc.common.HandlerWrappers;
 import cn.o4a.rpc.common.MessageCodec;
 import cn.o4a.rpc.common.MessageFrameDecoder;
 import io.netty.bootstrap.Bootstrap;
@@ -16,6 +14,7 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.io.Closeable;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -33,27 +32,31 @@ public class Client implements Closeable {
     private NioEventLoopGroup eventExecutors;
     private Channel channel;
 
-    private Client(InetSocketAddress serverAddress, ChannelHandler handler, ClientConfiguration configuration) {
+    private Client(InetSocketAddress serverAddress, ClientHandler clientHandler, ClientConfiguration configuration) throws ConnectException {
         if (configuration == null) {
             throw new IllegalArgumentException("configuration == null");
         }
         if (serverAddress == null) {
             throw new IllegalArgumentException("serverAddress == null");
         }
-        if (handler == null) {
+        if (clientHandler == null) {
             throw new IllegalArgumentException("handler == null");
         }
         this.configuration = configuration;
         this.serverAddress = serverAddress;
-        this.clientHandler = new ClientHandler(HandlerWrappers.wrap(handler));
+        this.clientHandler = clientHandler;
         initAndConnect();
     }
 
-    public static Client connect(InetSocketAddress serverAddress, ChannelHandler handler) {
-        return new Client(serverAddress, handler, ClientConfiguration.defaultConfig());
+    public static Client connect(InetSocketAddress serverAddress, ClientHandler clientHandler) throws ConnectException {
+        return new Client(serverAddress, clientHandler, ClientConfiguration.defaultConfig());
     }
 
-    private void initAndConnect() {
+    public boolean isConnected() {
+        return channel.isActive();
+    }
+
+    private void initAndConnect() throws ConnectException {
         eventExecutors = new NioEventLoopGroup(configuration.getEventThreads());
         //创建bootstrap对象，配置参数
         final Bootstrap bootstrap = new Bootstrap();
@@ -79,10 +82,15 @@ public class Client implements Closeable {
                                 .addLast("client-handler", clientHandler);
                     }
                 });
-        //连接服务端
-        final ChannelFuture channelFuture = bootstrap.connect(serverAddress);
-        //对通道关闭进行监听
-        channel = channelFuture.channel();
+        try {
+            //连接服务端
+            final ChannelFuture channelFuture = bootstrap.connect(serverAddress).sync();
+            //对通道关闭进行监听
+            channel = channelFuture.channel();
+        } catch (Exception e) {
+            throw new ConnectException("连接服务器失败, e: " + e.getMessage());
+        }
+
     }
 
     /**

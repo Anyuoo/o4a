@@ -45,6 +45,9 @@ public class ServerHandler extends ChannelDuplexHandler {
             NettyChannel.removeChannel(ctx.channel());
         }
 
+        if (logger.isInfoEnabled()) {
+            logger.info("The connection of " + channel.getRemoteAddress() + " -> " + channel.getLocalAddress() + " is disconnected.");
+        }
     }
 
     @Override

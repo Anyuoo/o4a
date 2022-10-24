@@ -39,6 +39,20 @@ public class ClientHandler extends ChannelDuplexHandler {
     }
 
     @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
+        try {
+            channelHandler.disconnected(channel);
+        } finally {
+            NettyChannel.removeChannel(ctx.channel());
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info("The connection of " + channel.getRemoteAddress() + " -> " + channel.getLocalAddress() + " is disconnected.");
+        }
+    }
+
+    @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
         channelHandler.received(channel, (Message) msg);
@@ -49,6 +63,7 @@ public class ClientHandler extends ChannelDuplexHandler {
         super.write(ctx, msg, promise);
         final NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
 
+        //copy from dubbo
         // We add listeners to make sure our out bound event is correct.
         // If our out bound event has an error (in most cases the encoder fails),
         // we need to have the request return directly instead of blocking the invoke process.
