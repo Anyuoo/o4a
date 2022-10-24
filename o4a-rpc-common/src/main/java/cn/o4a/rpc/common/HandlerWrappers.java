@@ -11,6 +11,10 @@ public class HandlerWrappers {
         return new HeartBeatHandler(channelHandler);
     }
 
+    public static ChannelHandler wrapAllHandler(ChannelHandler channelHandler) {
+        return new AllSharedChannelHandler(channelHandler);
+    }
+
     private void HandlerWrappers() {
     }
 }

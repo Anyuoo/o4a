@@ -93,12 +93,12 @@ public class NettyChannel extends AbstractChanel {
     }
 
     @Override
-    public void send(Object message) throws RemotingException {
+    public void send(Message message) throws RemotingException {
         send(message, -1);
     }
 
     @Override
-    public void send(Object message, int timeout) throws RemotingException {
+    public void send(Message message, int timeout) throws RemotingException {
         boolean success = true;
         try {
             ChannelFuture future = channel.writeAndFlush(message);
@@ -111,12 +111,12 @@ public class NettyChannel extends AbstractChanel {
                 throw throwable;
             }
             if (!success) {
-                throw new RemotingException("Failed to send message " + " to " + getRemoteAddress()
+                throw new RemotingException(this, "Failed to send message " + " to " + getRemoteAddress()
                         + "in timeout(" + timeout + "ms) limit");
             }
         } catch (Throwable e) {
             removeChannelIfDisconnected(channel);
-            throw new RemotingException("Failed to send message " + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
+            throw new RemotingException(this, "Failed to send message " + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
         }
     }
 

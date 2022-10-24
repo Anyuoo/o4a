@@ -14,19 +14,13 @@ public class BizHandler implements ChannelHandler {
 
 
     @Override
-    public void connected(Channel channel) throws RemotingException {
-        channel.send("");
-    }
-
-    @Override
     public void disconnected(Channel channel) throws RemotingException {
-
     }
 
 
     @Override
     public void received(Channel channel, Message message) throws RemotingException {
-
+        channel.send(null);
 
     }
 

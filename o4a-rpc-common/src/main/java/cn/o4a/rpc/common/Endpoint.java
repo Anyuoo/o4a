@@ -28,13 +28,12 @@ public interface Endpoint extends Closeable {
      *
      * @param message message
      */
-    void send(Object message) throws RemotingException;
+    void send(Message message) throws RemotingException;
 
     /**
      * send message.
-     *
-     * @param message message
+     *  @param message message
      * @param timeout already sent to socket?
      */
-    void send(Object message, int timeout) throws RemotingException;
+    void send(Message message, int timeout) throws RemotingException;
 }

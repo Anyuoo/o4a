@@ -53,6 +53,27 @@ public final class Message {
      */
     private String errorMessage;
 
+    /**
+     * 消息code, 对应业务
+     */
+    private MessageCode code;
+
+    public MessageCode getCode() {
+        return code;
+    }
+
+    public void setCode(MessageCode code) {
+        this.code = code;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
     public Message(long id, boolean type, byte status, boolean event, Object body) {
         this.id = id;
         this.type = type;

@@ -1,14 +1,13 @@
 package cn.o4a.rpc.client;
 
-import cn.o4a.rpc.common.ChannelHandler;
-import cn.o4a.rpc.common.HandlerWrappers;
-import cn.o4a.rpc.common.LogChannelHandler;
+import cn.o4a.rpc.common.*;
 
 import java.io.Closeable;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Anyu
@@ -21,9 +20,13 @@ public class ClientCluster implements Closeable {
     private final ClientHandler clientHandler;
 
     public ClientCluster(ChannelHandler channelHandler) {
-        this.clientHandler = new ClientHandler(HandlerWrappers.wrap(new LogChannelHandler()));
+        this.clientHandler = new ClientHandler(wrapHandler(channelHandler));
     }
 
+    private ChannelHandler wrapHandler(ChannelHandler channelHandler) {
+        //心跳 + 线程模型
+        return new HeartBeatHandler(new AllSharedChannelHandler(channelHandler));
+    }
 
     public Client getOrRegister(InetSocketAddress serverAddress) {
         if (serverAddress == null) {
@@ -40,7 +43,6 @@ public class ClientCluster implements Closeable {
             } catch (ConnectException connectException) {
 
             }
-
         }
         return client;
     }
@@ -59,6 +61,8 @@ public class ClientCluster implements Closeable {
 
         }
         CLIENT_MAP.clear();
+        //
+        Executors.destroy(Constants.SHARED_EXECUTOR, 5, TimeUnit.SECONDS);
     }
 
     public int getConnectedClientSize() {

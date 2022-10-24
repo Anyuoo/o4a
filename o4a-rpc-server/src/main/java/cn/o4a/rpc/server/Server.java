@@ -1,12 +1,11 @@
 package cn.o4a.rpc.server;
 
+import cn.o4a.rpc.common.*;
 import cn.o4a.rpc.common.ChannelHandler;
-import cn.o4a.rpc.common.HandlerWrappers;
-import cn.o4a.rpc.common.MessageCodec;
-import cn.o4a.rpc.common.MessageFrameDecoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
+import io.netty.channel.Channel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -58,7 +57,7 @@ public class Server implements Closeable {
 
         this.localAddress = localAddress;
         this.configuration = configuration;
-        this.serverHandler = new ServerHandler(HandlerWrappers.wrap(handler));
+        this.serverHandler = new ServerHandler(new HeartBeatHandler(new AllSharedChannelHandler(handler)));
         initAndStart();
     }
 
