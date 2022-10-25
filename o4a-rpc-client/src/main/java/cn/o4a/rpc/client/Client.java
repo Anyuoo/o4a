@@ -83,7 +83,7 @@ public class Client implements Closeable {
                 });
     }
 
-    public void doConnect() {
+    private void doConnect() {
         //连接服务端
         channelFuture = bootstrap.connect(serverAddress);
         //启动重连监听器

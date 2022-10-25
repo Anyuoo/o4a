@@ -2,6 +2,7 @@ package cn.o4a.rpc.client;
 
 import cn.newrank.niop.sdk.consumer.AbilityTaskHandler;
 import cn.newrank.niop.sdk.model.ConsumerMessage;
+import cn.newrank.niop.sdk.model.Task;
 import cn.o4a.rpc.common.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class BizHandler implements ChannelHandler {
         if (code == MessageCode.TASK_DISPATCH) {
             //
             final AbilityTaskHandler abilityTaskHandler = TaskExecuteHandlers.get("ability_id");
-            final ConsumerMessage consumerMessage = abilityTaskHandler.handle(null);
+            final ConsumerMessage consumerMessage = abilityTaskHandler.handle(new Task());
             channel.send(Message.response(message.getId(), Message.STATUS_OK, consumerMessage));
         } else {
             switch (code) {

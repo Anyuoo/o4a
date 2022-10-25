@@ -1,8 +1,8 @@
 package cn.o4a.rpc.client;
 
 import cn.newrank.niop.sdk.consumer.AbilityTaskHandler;
+import cn.newrank.niop.sdk.model.BizState;
 import cn.newrank.niop.sdk.model.ConsumerMessage;
-import cn.newrank.niop.sdk.model.Task;
 
 /**
  * @author Anyu
@@ -13,13 +13,7 @@ public class TaskExecuteHandlers {
 
 
     public static AbilityTaskHandler get(String abilityId) {
-        return new AbilityTaskHandler() {
-            @Override
-            public ConsumerMessage handle(Task task) {
-                return null;
-            }
-
-        };
+        return task -> ConsumerMessage.success(task.getTaskId(), BizState.SUCCESS);
     }
 
 }
