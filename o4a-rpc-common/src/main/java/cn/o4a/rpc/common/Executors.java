@@ -11,17 +11,27 @@ import java.util.concurrent.*;
 public class Executors {
 
     private static final Map<String, ExecutorService> EXECUTOR_SERVICES = new ConcurrentHashMap<>();
+
     private Executors() {
     }
 
-    public static ExecutorService sharedExecutor() {
-        return sharedExecutor(Constants.SHARED_EXECUTOR, Constants.SHARED_THREADS);
+    public static ExecutorService getOrCreateSharedExecutor() {
+        return getOrCreateSharedExecutor(Constants.SHARED_EXECUTOR, Constants.SHARED_THREADS);
     }
 
 
-    public static ExecutorService sharedExecutor(String key, int threads) {
+    public static ExecutorService getOrCreateSharedExecutor(String key, int threads) {
         return EXECUTOR_SERVICES.computeIfAbsent(key, k ->
-                new ThreadPoolExecutor(0, threads
+                new ThreadPoolExecutor(0, Math.max(1, threads)
+                        , 60, TimeUnit.SECONDS
+                        , new SynchronousQueue<>()
+                        , new ThreadPoolExecutor.AbortPolicy())
+        );
+    }
+
+    public static ExecutorService getOrCreatePrivateExecutor(String key, int threads) {
+        return EXECUTOR_SERVICES.computeIfAbsent(Constants.PRIVATE_EXECUTOR_PREFIX + key, k ->
+                new ThreadPoolExecutor(0, Math.max(1, threads)
                         , 60, TimeUnit.SECONDS
                         , new SynchronousQueue<>()
                         , new ThreadPoolExecutor.AbortPolicy())

@@ -1,9 +1,9 @@
 package cn.o4a.rpc.client;
 
 import cn.o4a.rpc.common.*;
+import io.netty.channel.ChannelFutureListener;
 
 import java.io.Closeable;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,27 +25,39 @@ public class ClientCluster implements Closeable {
 
     private ChannelHandler wrapHandler(ChannelHandler channelHandler) {
         //心跳 + 线程模型
-        return new HeartBeatHandler(new AllSharedChannelHandler(channelHandler));
+        return new ReconnectHandler(new HeartBeatHandler(new AllSharedChannelHandler(channelHandler)), this);
     }
 
+    /**
+     * 获取或注册客户端
+     *
+     * @param serverAddress 服务端地址
+     * @return 客户端
+     */
     public Client getOrRegister(InetSocketAddress serverAddress) {
         if (serverAddress == null) {
             throw new IllegalArgumentException("serverAddress == null");
         }
         Client client = CLIENT_MAP.get(serverAddress);
 
-        if (client == null) {
-            try {
-                client = Client.connect(serverAddress, clientHandler);
-                if (client.isConnected()) {
-                    CLIENT_MAP.put(serverAddress, client);
-                }
-            } catch (ConnectException connectException) {
-
+        if (client == null || !client.isConnected()) {
+            //移除
+            if (client != null) {
+                client.close();
             }
+            CLIENT_MAP.remove(serverAddress);
+            //重建连接
+            final Client rf = Client.connect(serverAddress, clientHandler);
+            rf.getChannelFuture().addListener((ChannelFutureListener) channelFuture -> {
+                if (channelFuture.isSuccess()) {
+                    CLIENT_MAP.put(serverAddress, rf);
+                }
+            });
+            client = rf;
         }
         return client;
     }
+
 
     @Override
     public void close() {

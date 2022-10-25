@@ -1,11 +1,11 @@
 package cn.o4a.rpc.server;
 
-import cn.o4a.rpc.common.*;
 import cn.o4a.rpc.common.ChannelHandler;
+import cn.o4a.rpc.common.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
 import io.netty.channel.Channel;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -43,6 +43,7 @@ public class Server implements Closeable {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private ServerBootstrap bootstrap;
+    private ChannelFuture channelFuture;
 
     private Server(InetSocketAddress localAddress, ChannelHandler handler, ServerConfiguration configuration) throws ConnectException {
         if (localAddress == null) {
@@ -57,7 +58,7 @@ public class Server implements Closeable {
 
         this.localAddress = localAddress;
         this.configuration = configuration;
-        this.serverHandler = new ServerHandler(new HeartBeatHandler(new AllSharedChannelHandler(handler)));
+        this.serverHandler = new ServerHandler(new HeartBeatHandler(new PrivateChannelHandler(handler)));
         initAndStart();
     }
 
@@ -115,13 +116,7 @@ public class Server implements Closeable {
         bootstrap = new ServerBootstrap();
         initBootstrap();
         //绑定端口号，启动服务端
-        final ChannelFuture channelFuture;
-        try {
-            channelFuture = bootstrap.bind(localAddress).sync();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ConnectException("初始化服务失败, " + e.getMessage());
-        }
+        channelFuture = bootstrap.bind(localAddress);
         channel = channelFuture.channel();
     }
 
@@ -163,6 +158,10 @@ public class Server implements Closeable {
         } catch (Throwable e) {
             //
         }
+    }
+
+    public ChannelFuture getChannelFuture() {
+        return channelFuture;
     }
 
     private Collection<Channel> getChannels() {

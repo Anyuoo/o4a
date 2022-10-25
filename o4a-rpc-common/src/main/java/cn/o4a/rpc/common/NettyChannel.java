@@ -121,6 +121,11 @@ public class NettyChannel extends AbstractChanel {
     }
 
     @Override
+    public Channel getNettyChannel() {
+        return channel;
+    }
+
+    @Override
     public void close() {
         super.close();
         try {

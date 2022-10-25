@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 import static cn.o4a.rpc.common.ChannelEventRunnable.ChannelState;
+
 /**
  * 线程模型
  *
@@ -11,7 +12,7 @@ import static cn.o4a.rpc.common.ChannelEventRunnable.ChannelState;
  * @version 1.0.0
  * @since 2022/10/24 19:11
  */
-public class AllSharedChannelHandler extends ChannelHandlerDelegate{
+public class AllSharedChannelHandler extends ChannelHandlerDelegate {
 
 
     public AllSharedChannelHandler(ChannelHandler channelHandler) {
@@ -20,7 +21,7 @@ public class AllSharedChannelHandler extends ChannelHandlerDelegate{
 
     @Override
     public void connected(Channel channel) throws RemotingException {
-        final ExecutorService sharedExecutor = Executors.sharedExecutor();
+        final ExecutorService sharedExecutor = Executors.getOrCreateSharedExecutor();
         try {
             sharedExecutor.execute(new ChannelEventRunnable(channel, channelHandler, ChannelState.CONNECTED));
         } catch (Throwable t) {
@@ -30,7 +31,7 @@ public class AllSharedChannelHandler extends ChannelHandlerDelegate{
 
     @Override
     public void disconnected(Channel channel) throws RemotingException {
-        final ExecutorService sharedExecutor = Executors.sharedExecutor();
+        final ExecutorService sharedExecutor = Executors.getOrCreateSharedExecutor();
         try {
             sharedExecutor.execute(new ChannelEventRunnable(channel, channelHandler, ChannelState.DISCONNECTED));
         } catch (Throwable t) {
@@ -40,13 +41,13 @@ public class AllSharedChannelHandler extends ChannelHandlerDelegate{
 
     @Override
     public void received(Channel channel, Message message) throws RemotingException {
-        final ExecutorService sharedExecutor = Executors.sharedExecutor();
+        final ExecutorService sharedExecutor = Executors.getOrCreateSharedExecutor();
         try {
             sharedExecutor.execute(new ChannelEventRunnable(channel, channelHandler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
-            if(message.isRequest() && t instanceof RejectedExecutionException){
+            if (message.isRequest() && t instanceof RejectedExecutionException) {
                 sendFeedback(channel, message, t);
-            }else {
+            } else {
                 throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
             }
         }
@@ -54,12 +55,17 @@ public class AllSharedChannelHandler extends ChannelHandlerDelegate{
 
     @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
-        final ExecutorService sharedExecutor = Executors.sharedExecutor();
+        final ExecutorService sharedExecutor = Executors.getOrCreateSharedExecutor();
         try {
             sharedExecutor.execute(new ChannelEventRunnable(channel, channelHandler, ChannelState.CAUGHT, exception));
         } catch (Throwable t) {
             throw new ExecutionException("caught event", channel, getClass() + " error when process caught event .", t);
         }
+    }
+
+    @Override
+    public ChannelHandler getChannelHandler() {
+        return this;
     }
 
     protected void sendFeedback(Channel channel, Message message, Throwable t) throws RemotingException {

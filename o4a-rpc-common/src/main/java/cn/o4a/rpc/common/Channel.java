@@ -57,4 +57,6 @@ public interface Channel extends Endpoint {
      * close the channel.
      */
     void close();
+
+    io.netty.channel.Channel getNettyChannel();
 }

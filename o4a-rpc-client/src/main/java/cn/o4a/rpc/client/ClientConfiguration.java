@@ -21,6 +21,10 @@ public class ClientConfiguration {
      * 最大body大小
      */
     private int maxBodySize = 1024 * 64;
+    /**
+     * 服务重连间隔(mills)
+     */
+    private int reconnectDelay = 3000;
 
     /**
      * event 线程数
@@ -61,5 +65,13 @@ public class ClientConfiguration {
 
     public void setEventThreads(int eventThreads) {
         this.eventThreads = eventThreads;
+    }
+
+    public int getReconnectDelay() {
+        return reconnectDelay;
+    }
+
+    public void setReconnectDelay(int reconnectDelay) {
+        this.reconnectDelay = reconnectDelay;
     }
 }

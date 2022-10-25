@@ -3,18 +3,16 @@ package cn.o4a.rpc.client;
 import cn.o4a.rpc.common.MessageCodec;
 import cn.o4a.rpc.common.MessageFrameDecoder;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -25,14 +23,16 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * @since 2022/10/20 9:10
  */
 public class Client implements Closeable {
-
+    private static final Logger logger = LoggerFactory.getLogger(Client.class);
     private final InetSocketAddress serverAddress;
     private final ClientHandler clientHandler;
     private final ClientConfiguration configuration;
+    private final Bootstrap bootstrap;
     private NioEventLoopGroup eventExecutors;
     private Channel channel;
+    private ChannelFuture channelFuture;
 
-    private Client(InetSocketAddress serverAddress, ClientHandler clientHandler, ClientConfiguration configuration) throws ConnectException {
+    private Client(InetSocketAddress serverAddress, ClientHandler clientHandler, ClientConfiguration configuration) {
         if (configuration == null) {
             throw new IllegalArgumentException("configuration == null");
         }
@@ -45,10 +45,11 @@ public class Client implements Closeable {
         this.configuration = configuration;
         this.serverAddress = serverAddress;
         this.clientHandler = clientHandler;
-        initAndConnect();
+        this.bootstrap = initClientBootstrap();
+        doConnect();
     }
 
-    public static Client connect(InetSocketAddress serverAddress, ClientHandler clientHandler) throws ConnectException {
+    public static Client connect(InetSocketAddress serverAddress, ClientHandler clientHandler) {
         return new Client(serverAddress, clientHandler, ClientConfiguration.defaultConfig());
     }
 
@@ -56,12 +57,10 @@ public class Client implements Closeable {
         return channel.isActive();
     }
 
-    private void initAndConnect() throws ConnectException {
+    private Bootstrap initClientBootstrap() {
         eventExecutors = new NioEventLoopGroup(configuration.getEventThreads());
-        //创建bootstrap对象，配置参数
-        final Bootstrap bootstrap = new Bootstrap();
         //设置线程组
-        bootstrap.group(eventExecutors)
+        return new Bootstrap().group(eventExecutors)
                 //设置客户端的通道实现类型
                 .channel(NioSocketChannel.class)
                 .handler(new LoggingHandler())
@@ -82,16 +81,25 @@ public class Client implements Closeable {
                                 .addLast("client-handler", clientHandler);
                     }
                 });
-        try {
-            //连接服务端
-            final ChannelFuture channelFuture = bootstrap.connect(serverAddress).sync();
-            //对通道关闭进行监听
-            channel = channelFuture.channel();
-        } catch (Exception e) {
-            throw new ConnectException("连接服务器失败, e: " + e.getMessage());
-        }
-
     }
+
+    public void doConnect() {
+        //连接服务端
+        channelFuture = bootstrap.connect(serverAddress);
+        //启动重连监听器
+        channelFuture.addListener((ChannelFutureListener) cf -> {
+            if (cf.isSuccess()) {
+                return;
+            }
+            cf.channel().eventLoop().schedule(() -> {
+                logger.info("---------->reconnect .......");
+                doConnect();
+            }, configuration.getReconnectDelay(), MILLISECONDS);
+        });
+        //对通道关闭进行监听
+        channel = channelFuture.channel();
+    }
+
 
     /**
      * 空闲超时连接处理器
@@ -102,6 +110,13 @@ public class Client implements Closeable {
         return new IdleStateHandler(configuration.getHeartbeatInterval(), 0, 0, MILLISECONDS);
     }
 
+    public ClientConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    public ChannelFuture getChannelFuture() {
+        return channelFuture;
+    }
 
     @Override
     public void close() {

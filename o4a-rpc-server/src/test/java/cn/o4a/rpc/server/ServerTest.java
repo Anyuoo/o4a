@@ -1,6 +1,5 @@
 package cn.o4a.rpc.server;
 
-import cn.o4a.rpc.common.LogChannelHandler;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,7 @@ class ServerTest {
 
     @Test
     void runSever9999() {
-        try (final Server server = Server.bind(new InetSocketAddress("127.0.0.1", 9999), new LogChannelHandler())) {
+        try (final Server server = Server.bind(new InetSocketAddress("127.0.0.1", 9999), new SeverBizHandler())) {
             //
             logger.info("服务端已启动, instance: {}", server);
             TimeUnit.DAYS.sleep(1);
@@ -24,7 +23,7 @@ class ServerTest {
 
     @Test
     void runSever9998() {
-        try (final Server server = Server.bind(new InetSocketAddress("127.0.0.1", 9998), new LogChannelHandler())) {
+        try (final Server server = Server.bind(new InetSocketAddress("127.0.0.1", 9998), new SeverBizHandler())) {
             //
             logger.info("服务端已启动, instance: {}", server);
             TimeUnit.DAYS.sleep(1);

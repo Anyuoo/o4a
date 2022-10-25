@@ -22,7 +22,7 @@ public abstract class AbstractMessageCodec<T> extends MessageToMessageCodec<Byte
     /**
      * 版本 & 类型
      */
-    protected static final byte METADATA = 126;
+    protected static final byte METADATA = 100;
 
 
     public static int messageSize(int bodySize) {

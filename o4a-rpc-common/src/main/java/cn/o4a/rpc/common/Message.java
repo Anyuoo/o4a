@@ -58,22 +58,6 @@ public final class Message {
      */
     private MessageCode code;
 
-    public MessageCode getCode() {
-        return code;
-    }
-
-    public void setCode(MessageCode code) {
-        this.code = code;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
     public Message(long id, boolean type, byte status, boolean event, Object body) {
         this.id = id;
         this.type = type;
@@ -114,7 +98,6 @@ public final class Message {
         this.id = id;
     }
 
-
     public static Message heartBeatEvent() {
         return new Message(STATUS_OK, true, HEART_BEAT_EVENT);
     }
@@ -133,6 +116,22 @@ public final class Message {
 
     public static Message response(long id, byte status, Object body) {
         return new Message(id, status, false, body);
+    }
+
+    public MessageCode getCode() {
+        return code;
+    }
+
+    public void setCode(MessageCode code) {
+        this.code = code;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
     public boolean isRequest() {

@@ -32,7 +32,8 @@ public interface Endpoint extends Closeable {
 
     /**
      * send message.
-     *  @param message message
+     *
+     * @param message message
      * @param timeout already sent to socket?
      */
     void send(Message message, int timeout) throws RemotingException;
