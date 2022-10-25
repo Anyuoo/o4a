@@ -29,11 +29,12 @@ public class Executors {
         );
     }
 
-    public static ExecutorService getOrCreatePrivateExecutor(String key, int threads) {
+    public static ExecutorService getOrCreatePrivateExecutor(String key, int coreThreads, int queueSize) {
+        final int realThreads = Math.max(1, coreThreads);
         return EXECUTOR_SERVICES.computeIfAbsent(Constants.PRIVATE_EXECUTOR_PREFIX + key, k ->
-                new ThreadPoolExecutor(0, Math.max(1, threads)
+                new ThreadPoolExecutor(realThreads, 100
                         , 60, TimeUnit.SECONDS
-                        , new SynchronousQueue<>()
+                        , queueSize <= 0 ? new SynchronousQueue<>() : new LinkedBlockingQueue<>(queueSize)
                         , new ThreadPoolExecutor.AbortPolicy())
         );
     }

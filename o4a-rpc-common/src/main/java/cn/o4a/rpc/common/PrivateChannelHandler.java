@@ -17,7 +17,7 @@ public class PrivateChannelHandler extends AllSharedChannelHandler {
     }
 
     private ExecutorService getPrivateExecutor(Channel channel) {
-        return Executors.getOrCreatePrivateExecutor("id", 10);
+        return Executors.getOrCreatePrivateExecutor(channel.getRemoteAddress().toString(), 5, 30);
     }
 
 

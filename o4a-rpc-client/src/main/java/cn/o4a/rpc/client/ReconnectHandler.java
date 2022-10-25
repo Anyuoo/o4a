@@ -21,6 +21,7 @@ public class ReconnectHandler extends ChannelHandlerDelegate {
 
     @Override
     public void connected(Channel channel) throws RemotingException {
+        //保存之前的服务地址
         channel.setAttribute(Constants.CHANNEL_KEY_SEVER_ADDRESS, channel.getRemoteAddress());
         super.connected(channel);
     }
