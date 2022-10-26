@@ -12,16 +12,14 @@ public interface ChannelHandler {
      *
      * @param channel channel.
      */
-    default void connected(Channel channel) throws RemotingException {
-    }
+     void connected(Channel channel) throws RemotingException;
 
     /**
      * on channel disconnected.
      *
      * @param channel channel.
      */
-    default void disconnected(Channel channel) throws RemotingException {
-    }
+     void disconnected(Channel channel) throws RemotingException;
 
     /**
      * on message sent.
@@ -29,8 +27,7 @@ public interface ChannelHandler {
      * @param channel channel.
      * @param message message.
      */
-    default void sent(Channel channel, Message message) throws RemotingException {
-    }
+    void sent(Channel channel, Message message) throws RemotingException;
 
     /**
      * on message received.
@@ -38,8 +35,7 @@ public interface ChannelHandler {
      * @param channel channel.
      * @param message message.
      */
-    default void received(Channel channel, Message message) throws RemotingException {
-    }
+    void received(Channel channel, Message message) throws RemotingException;
 
     /**
      * on exception caught.
@@ -47,7 +43,6 @@ public interface ChannelHandler {
      * @param channel   channel.
      * @param exception exception.
      */
-    default void caught(Channel channel, Throwable exception) throws RemotingException {
-    }
+    void caught(Channel channel, Throwable exception) throws RemotingException;
 
 }

@@ -68,6 +68,11 @@ public class SeverBizHandler implements ChannelHandler {
     }
 
     @Override
+    public void sent(Channel channel, Message message) throws RemotingException {
+
+    }
+
+    @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         logger.info("============> Sever Handler: channel received");
     }
