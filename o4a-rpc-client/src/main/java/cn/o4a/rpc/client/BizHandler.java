@@ -4,6 +4,7 @@ import cn.newrank.niop.sdk.consumer.AbilityTaskHandler;
 import cn.newrank.niop.sdk.model.ConsumerMessage;
 import cn.newrank.niop.sdk.model.Task;
 import cn.o4a.rpc.common.*;
+import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,9 +36,8 @@ public class BizHandler implements ChannelHandler {
         if (code == MessageCode.TASK_DISPATCH) {
             //
             final AbilityTaskHandler abilityTaskHandler = TaskExecuteHandlers.get("ability_id");
-            final Task task = new Task();
-            task.setTaskId("task_id");
-            final ConsumerMessage consumerMessage = abilityTaskHandler.handle(task);
+            final JSONObject task = (JSONObject)message.getBody();
+            final ConsumerMessage consumerMessage = abilityTaskHandler.handle(task.toJavaObject(Task.class));
 
             channel.send(Message.response(message.getId(), Message.STATUS_OK, consumerMessage, MessageCode.TASK_COMPLETED));
         } else {
