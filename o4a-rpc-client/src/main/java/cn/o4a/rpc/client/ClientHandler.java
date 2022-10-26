@@ -29,7 +29,7 @@ public class ClientHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         try {
             final NettyChannel nettyChannel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
             channelHandler.connected(nettyChannel);
@@ -39,7 +39,7 @@ public class ClientHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
         try {
             channelHandler.disconnected(channel);
@@ -53,7 +53,7 @@ public class ClientHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), channelHandler);
         channelHandler.received(channel, (Message) msg);
     }
@@ -69,7 +69,7 @@ public class ClientHandler extends ChannelDuplexHandler {
         // we need to have the request return directly instead of blocking the invoke process.
         promise.addListener(future -> {
             if (future.isSuccess()) {
-                // if our future is success, mark the future to sent.
+                // if our future is success, mark the future to send.
                 channelHandler.sent(channel, (Message) msg);
                 return;
             }

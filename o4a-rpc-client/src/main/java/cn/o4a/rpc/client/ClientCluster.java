@@ -24,7 +24,7 @@ public class ClientCluster implements Closeable {
     }
 
     private ChannelHandler wrapHandler(ChannelHandler channelHandler) {
-        //心跳 + 线程模型
+        //重连 + 心跳 + 线程模型
         return new ReconnectHandler(new HeartBeatHandler(new AllSharedChannelHandler(channelHandler)), this);
     }
 

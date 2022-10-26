@@ -76,8 +76,8 @@ public class AllSharedChannelHandler extends ChannelHandlerDelegate {
         String msg = "Server side(" + channel.getRemoteAddress()
                 + ") thread pool is exhausted, detail msg:" + t.getMessage();
 
-        final Message response = Message.response(message.getId(), Message.STATUS_ERROR, null);
-        response.setErrorMessage(msg);
+        final Message response = Message.response(message.getId(), Message.STATUS_ERROR, null, MessageCode.NORMAL);
+        response.setError(msg);
 
         channel.send(response);
     }

@@ -16,9 +16,8 @@ public final class Message {
     /**
      * 状态
      */
-    public static final byte STATUS_OK = 20;
-    public static final byte STATUS_TIMEOUT = 30;
-    public static final byte STATUS_ERROR = 40;
+    public static final byte STATUS_OK = 10;
+    public static final byte STATUS_ERROR = 20;
     /**
      * 心跳事件
      */
@@ -49,9 +48,9 @@ public final class Message {
      */
     private Object body;
     /**
-     * 消息
+     * 错误信息
      */
-    private String errorMessage;
+    private String error;
 
     /**
      * 消息code, 对应业务
@@ -110,12 +109,16 @@ public final class Message {
         return new Message(STATUS_OK, true, EXCEPTION_EVENT + desc);
     }
 
-    public static Message request(Object body) {
-        return new Message(STATUS_OK, false, body);
+    public static Message request(Object body, MessageCode code) {
+        final Message req = new Message(STATUS_OK, false, body);
+        req.setCode(code);
+        return req;
     }
 
-    public static Message response(long id, byte status, Object body) {
-        return new Message(id, status, false, body);
+    public static Message response(long id, byte status, Object body, MessageCode code) {
+        final Message resp = new Message(id, status, false, body);
+        resp.setCode(code);
+        return resp;
     }
 
     public MessageCode getCode() {
@@ -126,12 +129,12 @@ public final class Message {
         this.code = code;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    public String getError() {
+        return error;
     }
 
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+    public void setError(String error) {
+        this.error = error;
     }
 
     public boolean isRequest() {

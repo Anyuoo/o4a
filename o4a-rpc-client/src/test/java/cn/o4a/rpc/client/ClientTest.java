@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 class ClientTest {
 
     @Test
-    void startC() {
+    void start_clients() {
         try (final ClientCluster clientCluster = new ClientCluster(new BizHandler())) {
 
             final Client client1 = clientCluster.getOrRegister(new InetSocketAddress("127.0.0.1", 9999));

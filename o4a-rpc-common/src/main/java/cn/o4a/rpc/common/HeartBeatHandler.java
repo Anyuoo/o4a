@@ -41,7 +41,7 @@ public class HeartBeatHandler extends ChannelHandlerDelegate {
     public void received(Channel channel, Message message) throws RemotingException {
         setReadTimestamp(channel);
         if (message.isHeartBeatMessage()) {
-            logger.info("receive heart beat: {}", message);
+            //logger.info("receive heart beat: {}", message);
             if (message.isRequest()) {
                 final Message heartBeatMessage = Message.heartBeatEvent(message.getId());
                 //回执

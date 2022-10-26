@@ -24,6 +24,8 @@ public class BizHandler implements ChannelHandler {
     @Override
     public void connected(Channel channel) throws RemotingException {
         logger.info("============> Client Handler: channel connected");
+        //发送注册信息
+        channel.send(Message.request(new String[]{"1234"}, MessageCode.REGISTER));
     }
 
     @Override
@@ -33,8 +35,11 @@ public class BizHandler implements ChannelHandler {
         if (code == MessageCode.TASK_DISPATCH) {
             //
             final AbilityTaskHandler abilityTaskHandler = TaskExecuteHandlers.get("ability_id");
-            final ConsumerMessage consumerMessage = abilityTaskHandler.handle(new Task());
-            channel.send(Message.response(message.getId(), Message.STATUS_OK, consumerMessage));
+            final Task task = new Task();
+            task.setTaskId("task_id");
+            final ConsumerMessage consumerMessage = abilityTaskHandler.handle(task);
+
+            channel.send(Message.response(message.getId(), Message.STATUS_OK, consumerMessage, MessageCode.TASK_COMPLETED));
         } else {
             switch (code) {
                 case NORMAL:
